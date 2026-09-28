@@ -42,3 +42,24 @@ try:
     st.dataframe(epss, use_container_width=True)
 except Exception:
     st.info("Run collectors/epss.py first")
+from lookup import check_ip
+
+st.subheader("IP Lookup")
+ip = st.text_input("Enter an IP address to check")
+
+if ip:
+    ip = ip.strip()
+    result, error = check_ip(ip)
+    if error:
+        st.error(error)
+    else:
+        a, b, c = st.columns(3)
+        a.metric("Abuse confidence score", f"{result['abuseConfidenceScore']}%")
+        b.metric("Total reports", result["totalReports"])
+        c.metric("Country", result.get("countryCode") or "Unknown")
+        st.write(f"**ISP:** {result.get('isp')}  |  **Usage type:** {result.get('usageType')}")
+        st.write(f"**Last reported:** {result.get('lastReportedAt') or 'Never'}")
+
+    # Also check our own Feodo botnet list
+    if not c2.empty and ip in c2["ip"].values:
+        st.error("This IP is in your Feodo botnet C2 list!")
