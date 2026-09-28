@@ -63,3 +63,33 @@ if ip:
     # Also check our own Feodo botnet list
     if not c2.empty and ip in c2["ip"].values:
         st.error("This IP is in your Feodo botnet C2 list!")
+from mitre import FAMILIES, TECHNIQUES, normalize
+
+st.subheader("MITRE ATT&CK mapping")
+
+family = st.selectbox("Pick a malware family", sorted(FAMILIES.keys()))
+
+rows = []
+for tid in FAMILIES[family]:
+    name, tactic = TECHNIQUES[tid]
+    url = "https://attack.mitre.org/techniques/" + tid.replace(".", "/") + "/"
+    rows.append({"Tactic": tactic, "Technique ID": tid,
+                 "Technique": name, "Link": url})
+
+st.dataframe(pd.DataFrame(rows), use_container_width=True,
+             column_config={"Link": st.column_config.LinkColumn()})
+
+# Is this family showing up in your live C2 data?
+if not c2.empty:
+    live = {normalize(m) for m in c2["malware"].dropna()}
+    if family in live:
+        st.warning(f"{family.title()} C2 servers are in your live Feodo data.")
+    else:
+        st.info(f"No {family.title()} C2 servers in your current data.")
+st.subheader("Data freshness")
+try:
+    runs = pd.read_sql("""SELECT source, MAX(run_time) AS last_run, status
+                          FROM feed_runs GROUP BY source""", con)
+    st.dataframe(runs, use_container_width=True)
+except Exception:
+    st.info("Run refresh.py to see when each feed was last updated")
