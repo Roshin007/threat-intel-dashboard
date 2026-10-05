@@ -31,7 +31,7 @@ Python collectors -> SQLite database -> Streamlit dashboard
 ## Setup
 
 ```bash
-git clone https://github.com/roshinr/threat-intel-dashboard.git
+git clone https://github.com/roshin007/threat-intel-dashboard.git
 cd threat-intel-dashboard
 python3 -m venv venv
 source venv/bin/activate
